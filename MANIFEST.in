@@ -1,0 +1,2 @@
+include versioneer.py
+include dnd/_version.py
