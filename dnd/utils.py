@@ -294,10 +294,10 @@ class DNDBot:
     def roll_determine(self, msg):
         """Determine which roll function to use"""
         cmd = msg.replace('roll', '').strip()
-        if re.match(r'\d*d\d+', cmd, re.IGNORECASE):
+        if re.match(r'\d*d\d+', cmd, re.IGNORECASE) is not None:
             try:
                 res = dice_roller(cmd)
-                self.message_grp(res)
+                self.message_grp(res.__repr__())
             except SyntaxError:
                 self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`")
         elif 'stats' in msg:
