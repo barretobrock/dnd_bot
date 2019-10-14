@@ -293,10 +293,10 @@ class DNDBot:
 
     def roll_determine(self, msg):
         """Determine which roll function to use"""
-
-        if re.match(r'\d*d\d+', msg, re.IGNORECASE):
+        cmd = msg.replace('roll', '').strip()
+        if re.match(r'\d*d\d+', cmd, re.IGNORECASE):
             try:
-                res = dice_roller(msg.replace('roll', '').strip())
+                res = dice_roller(cmd)
                 self.message_grp(res)
             except SyntaxError:
                 self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`")
@@ -304,4 +304,6 @@ class DNDBot:
             self.message_grp(stats_roll())
         elif 'direction' in msg:
             self.message_grp(dir_roll())
+        else:
+            self.message_grp("I didn't understand the syntax after 'roll' for this: `{}`".format(cmd))
 
