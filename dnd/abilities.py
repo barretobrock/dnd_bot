@@ -19,6 +19,7 @@ class Ability:
     """"""
     def __init__(self, value, ability):
         self.name = ability
+        self.short_name = ability[:3]
         self.value = value
         self.modifier = Modifier(value)
         self.mod = self.modifier.value
@@ -29,41 +30,41 @@ class Ability:
         self.modifier.calc_modifier(self.value)
 
     def __repr__(self):
-        return '{}: {} {}'.format(self.name.title(), self.value, self.modifier.__repr__())
+        return '{}: {} {}'.format(self.short_name.upper(), self.value, self.modifier.__repr__())
 
 
 class Strength(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='str')
+        super().__init__(value, ability='strength')
 
 
 class Dexterity(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='dex')
+        super().__init__(value, ability='dexterity')
 
 
 class Constitution(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='con')
+        super().__init__(value, ability='constitution')
 
 
 class Intelligence(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='int')
+        super().__init__(value, ability='intelligence')
 
 
 class Wisdom(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='wis')
+        super().__init__(value, ability='wisdom')
 
 
 class Charisma(Ability):
     """"""
     def __init__(self, value):
-        super().__init__(value, ability='cha')
+        super().__init__(value, ability='charisma')
 

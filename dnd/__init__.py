@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from .utils import DNDBot
+from .bot import DNDBot
+from .abilities import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
+from .utils import eval_expr
 
 
 from ._version import get_versions
