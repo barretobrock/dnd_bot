@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 import re
 import time
-import signal
 import traceback
 from random import shuffle
-from slacktools import SlackTools
+from slacktools import SlackTools, GracefulKiller
 from kavalkilu import Keys
-from .dice import dice_roller, dir_roll, stats_roll
+from .dice import roll_dice, dir_roll, stats_roll
 
 
 help_txt = """
@@ -32,17 +31,6 @@ help_txt = """
         - `-w [slot-number]`: Attack with weapon in slot
  - `surrender`: Ends the combat round before a resolution
 """
-
-
-class GracefulKiller:
-    kill_now = False
-
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-    def exit_gracefully(self, signum, frame):
-        self.kill_now = True
 
 
 class DNDBot:
@@ -296,8 +284,8 @@ class DNDBot:
         cmd = msg.replace('roll', '').strip()
         if re.match(r'\d*d\d+', cmd, re.IGNORECASE) is not None:
             try:
-                res = dice_roller(cmd)
-                self.message_grp(res.__repr__())
+                res = roll_dice(cmd, str_output=True)
+                self.message_grp(res)
             except SyntaxError:
                 self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`")
         elif 'stats' in msg:

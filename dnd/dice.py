@@ -3,8 +3,8 @@
 import re
 import random
 from collections import namedtuple
-from dnd.utils import eval_expr
-from dnd.abilities import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
+from .utils import eval_expr
+from .abilities import Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
 
 
 try:
