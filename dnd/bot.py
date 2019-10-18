@@ -117,7 +117,7 @@ class DNDBot:
             self.roll_determine(message)
         elif message != '':
             response = "I didn't understand this: `{}`\n " \
-                       "Use `cah help` to get a list of my commands.".format(message)
+                       "Use `dnd help` to get a list of my commands.".format(message)
 
         if response is not None:
             resp_dict = {
