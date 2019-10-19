@@ -23,7 +23,7 @@ def read_dice_str(input_txt):
     Interpret a D&D dice string, eg. 3d10.
     """
 
-    dice_re = re.compile(r'(\d)*d(\d+)', flags=re.I)
+    dice_re = re.compile(r'(\d*)d(\d+)', flags=re.I)
     Dice = namedtuple('Dice', ('rolls', 'sides'))
     # Limit to the number of rolls/sides in one go.
     limit = 10000
