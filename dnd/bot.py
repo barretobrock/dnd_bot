@@ -15,27 +15,35 @@ help_txt = """
 *Command Prefix*
  - `d!` or `dnd`: Use this before any of the below commands (e.g., `d! roll d20`)
 
-*Basic Commands (currently inactive)*:
+*Basic Commands*:
  - `gen char [OPTIONS]`: generate a new character with random stats. 
     flags:
         - `-n <name>`:  give the character a specific name (otherwise randomly assigned)
- - `combat [OPTIONS]`: Begin a new combat round 
-    flags:
-        - `-cr [1-5]`: Set the challenge rating (this determines enemy stats, numbers) 
-        - `-p character1 character2`: Set the players taking part in the combat 
  - `my chars`: list the names of all your characters
  - `stats <name>`: get stats on the character
  - `rm char <name>`: remove a character by name from your catalog
 
 *Dice Rolling*:
- - `roll (\\d+)d(\\d+) (+\d+|(\\d+)d(\\d+))*`: roll (and add) dice using standard notation
+ - `roll <rolls>d<sides>`: roll (and add) dice using standard notation
+    Examples:
+        `roll 1d20 + 8 + 4d8`
+        `roll 2d20 - 2 + 4d10`
+        `roll d20`
+        `roll 2 + 2 + 5d8`
  - `roll stats`: returns the results for a DnD 5e stats roll (4d6 drop lowest)
  - `roll direction`: determines direction to travel based on roll
+
+*Combat Initiation*:
+ - `combat [OPTIONS]`: Begin a new combat round 
+    flags:
+        - `-cr [1-5]`: Set the challenge rating (this determines enemy stats, numbers) 
+        - `-p character1 character2`: Set the players taking part in the combat 
 
 *In-Combat Commands (currently inactive)*
  - `attack [OPTIONS]`
     flags:
-        - `-w [slot-number]`: Attack with weapon in slot
+        - `-w [slot-number]`: Attack with weapon in slot <n>. Otherwise will use primary
+ - `surrender`: ends the combat round before a resolution
  - `surrender`: Ends the combat round before a resolution
 """
 
@@ -196,16 +204,16 @@ class DNDBot:
     def roll_determine(self, msg):
         """Determine which roll function to use"""
         cmd = msg.replace('roll', '').strip()
-        if re.match(r'\d*d\d+', cmd, re.IGNORECASE) is not None:
+        if re.match(r'((\d+|\+| +)|(\d*)d(\d+))', cmd, re.IGNORECASE) is not None:
             try:
                 res = roll_dice(cmd, str_output=True)
                 self.message_grp(res)
             except SyntaxError:
                 self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`")
         elif 'stats' in msg:
-            self.message_grp(stats_roll())
+            self.message_grp('\n'.join([x['ability'].__repr__() for x in stats_roll()]))
         elif 'direction' in msg:
-            self.message_grp(dir_roll())
+            self.message_grp('`{}`'.format(dir_roll()))
         else:
             self.message_grp("I didn't understand the syntax after 'roll' for this: `{}`".format(cmd))
 
