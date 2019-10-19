@@ -147,7 +147,7 @@ class DNDBot:
             for char in c_list:
                 char_str = '`{}` ({} {})'.format(char.name, char.race, char.char_class)
                 char_info.append(char_str)
-            return '\n - '.join(char_info)
+            return '\n'.join(char_info)
         return 'No characters to show!'
 
     def get_char_stats(self, user, message):
