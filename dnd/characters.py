@@ -75,9 +75,9 @@ class Character:
 
     def __repr__(self):
         return """
-        {name}: {race} {char_class}
+        `{name}`: `{race}` `{char_class}`
         ----------------------------------------
-        HP: {current_hp}/{max_hp} XP: {xp} 
+        HP: `{current_hp}/{max_hp}` XP: `{xp}` 
         {strength}
         {dexterity}
         {constitution}
@@ -88,111 +88,111 @@ class Character:
 
 
 class Barbarian(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Barbarian',
             'hit_die': 'd12',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Bard(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Bard',
+            'char_class': 'Bard',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Cleric(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Cleric',
+            'char_class': 'Cleric',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Druid(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Druid',
+            'char_class': 'Druid',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Fighter(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Fighter',
+            'char_class': 'Fighter',
             'hit_die': 'd10',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Monk(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Monk',
+            'char_class': 'Monk',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Paladin(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Paladin',
+            'char_class': 'Paladin',
             'hit_die': 'd10',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Ranger(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Ranger',
+            'char_class': 'Ranger',
             'hit_die': 'd10',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Rogue(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Rogue',
+            'char_class': 'Rogue',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Sorceror(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Sorceror',
+            'char_class': 'Sorceror',
             'hit_die': 'd6',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Warlock(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Warlock',
+            'char_class': 'Warlock',
             'hit_die': 'd8',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 class Wizard(Character):
-    def __init__(self, name, **attrs):
+    def __init__(self, owner, name, **attrs):
         attrs.update({
-            '_class': 'Wizard',
+            'char_class': 'Wizard',
             'hit_die': 'd6',
         })
-        super().__init__(name, **attrs)
+        super().__init__(owner, name, **attrs)
 
 
 character_classes = [
