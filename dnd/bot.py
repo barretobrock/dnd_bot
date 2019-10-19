@@ -44,7 +44,6 @@ help_txt = """
     flags:
         - `-w [slot-number]`: Attack with weapon in slot <n>. Otherwise will use primary
  - `surrender`: ends the combat round before a resolution
- - `surrender`: Ends the combat round before a resolution
 """
 
 
@@ -109,6 +108,7 @@ class DNDBot:
         if message in commands.keys():
             # Call the command
             commands[message]()
+            return None
         if message.startswith('roll'):
             self.roll_determine(message)
         elif message.startswith('gen char'):
