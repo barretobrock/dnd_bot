@@ -6,12 +6,12 @@ from .dice import stats_roll
 from .races import Race, race_list
 
 
-def random_char_gen(name=None):
+def random_char_gen(owner, name=None):
     """Randomly generate a character"""
     rand_char_class = character_classes[randrange(0, len(character_classes) - 1)]
     rand_race = race_list[randrange(0, len(race_list) - 1)]
 
-    return rand_char_class(name=name, race=rand_race)
+    return rand_char_class(owner, name=name, race=rand_race)
 
 
 class Character:
@@ -19,7 +19,9 @@ class Character:
     level = 1
     xp = 0
 
-    def __init__(self, name=None, race=None, **attrs):
+    def __init__(self, owner, name=None, race=None, **attrs):
+        # User's Slack ID
+        self.owner = owner
         if race is None:
             self._race = Race()
         else:
@@ -28,6 +30,7 @@ class Character:
             self.name = self._race.name_list[randrange(0, len(self._race.name_list) - 1)].title()
         else:
             self.name = name.title()
+        self.name_lower = self.name.lower()
 
         for k, v in attrs.items():
             self.__setattr__(k, v)
