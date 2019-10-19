@@ -71,7 +71,7 @@ class Player:
         """Removes character obj by lowercase name"""
         char = self.get_char_by_name(name)
         if char is not None:
-            _ = self.character_list.pop(char)
+            _ = self.character_list.pop(self.character_list.index(char))
             return True
         return False
 

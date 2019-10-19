@@ -136,19 +136,25 @@ class DNDBot:
         char = random_char_gen(user, name)
         player.character_list.append(char)
         self.players.update_player(user, player)
-        return char
+        return char.__repr__()
 
     def show_user_chars(self, user):
         """Shows the name of the users characters"""
         player = self.players.get_player_by_id(user)
         c_list = player.character_list
-        return ', '.join(['`{}`'.format(x.name) for x in c_list]) if len(c_list) > 0 else 'No characters to show!'
+        char_info = []
+        if len(c_list) > 0:
+            for char in c_list:
+                char_str = '`{}` ({} {})'.format(char.name, char.race, char.char_class)
+                char_info.append(char_str)
+            return '\n - '.join(char_info)
+        return 'No characters to show!'
 
     def get_char_stats(self, user, message):
         """Shows the stats of a particular character"""
         player = self.players.get_player_by_id(user)
         char = player.get_char_by_name(message.replace('stats', '').strip())
-        return char
+        return char.__repr__()
 
     def remove_character(self, user, message):
         player = self.players.get_player_by_id(user)
