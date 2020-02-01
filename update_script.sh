@@ -29,7 +29,6 @@ announce_section "Beginning update of python package"
 # TODO check if installed, then upgrade if so
 pip3 install git+https://github.com/barretobrock/dnd_bot.git#egg=dnd_bot --upgrade
 # For daemon
-sudo pip3 install --target=/usr/local/lib/python3.6/dist-packages git+https://github.com/barretobrock/dnd_bot.git#egg=dnd_bot --upgrade
 
 
 announce_section "Process completed"

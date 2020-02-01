@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from dnd import DNDBot
-from kavalkilu import Log, LogArgParser
+from dnd.app import app
 
 
-# Initiate logging
-log = Log('dnd', log_lvl=LogArgParser().loglvl)
+if __name__ == '__main__':
+    app.run(port=5001)
 
-dndbot = DNDBot(log)
-try:
-    dndbot.run_rtm('Booted up and ready to play! :hyper-tada:', 'Daemon killed gracefully. :party-dead:')
-except KeyboardInterrupt:
-    log.debug('Script ended manually.')
-finally:
-    dndbot.message_grp('Shutdown for maintenance.:dotdotdot:')
-
-log.close()
 
