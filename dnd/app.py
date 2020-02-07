@@ -16,6 +16,7 @@ for t in ['SIGNING_SECRET', 'XOXB_TOKEN', 'XOXP_TOKEN', 'VERIFY_TOKEN']:
 Bot = DNDBot(bot_name, key_dict['xoxb_token'], key_dict['xoxp_token'])
 app = Flask(__name__)
 
+message_events = []
 # Events API listener
 bot_events = SlackEventAdapter(key_dict['signing_secret'], "/dnd/dndapi/events", app)
 
@@ -28,12 +29,16 @@ def scan_message(event_data):
     if event['type'] == 'message' and "subtype" not in event:
         trigger, message, raw_message = Bot.st.parse_direct_mention(event['text'])
         if trigger in Bot.triggers:
-            msg_packet = {
-                'message': message.strip(),
-                'raw_message': raw_message.strip()
-            }
-            # Add in all the other stuff
-            msg_packet.update(event)
+            # Build a message hash
+            msg_hash = f'{event["channel"]}_{event["ts"]}'
+            if msg_hash not in message_events:
+                message_events.append(msg_hash)
+                msg_packet = {
+                    'message': message.strip(),
+                    'raw_message': raw_message.strip()
+                }
+                # Add in all the other stuff
+                msg_packet.update(event)
 
     if msg_packet is not None:
         try:

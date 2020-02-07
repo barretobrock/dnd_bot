@@ -29,7 +29,7 @@ def read_dice_str(input_txt):
     limit = 10000
     matches = []
     for found in dice_re.finditer(input_txt):
-        rolls = int(found.group(1)) if found.group(1) is not None else 1
+        rolls = int(found.group(1)) if found.group(1) != '' else 1
         sides = int(found.group(2))
         if rolls > limit or sides > limit:
             raise ValueError("Number of dice rolls or sides exceeded limit.")

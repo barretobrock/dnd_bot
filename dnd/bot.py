@@ -80,9 +80,7 @@ class DNDBot:
         """Handles a bot command if it's known"""
         # Simple commands that we can map to a function
         commands = {
-            'help': self.show_help,
-            'good bot': 'thanks <@{user}>!',
-            'gsheets link': self.show_gsheet_link(),
+            'gsheets link': self.show_gsheet_link,
             # 'status': self.display_status,
             # 'surrender': self.end_game,
 
@@ -101,6 +99,10 @@ class DNDBot:
             self.roll_determine(message, channel)
         elif message.startswith('gen char'):
             response = self.character_generator(user, raw_message)
+        elif message == 'good bot':
+            response = 'thanks <@{user}>!'
+        elif message == 'help':
+            response = help_txt
         elif message == 'my chars':
             response = self.show_user_chars(user)
         elif message == 'refresh sheets':
