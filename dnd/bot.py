@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
-import time
-import traceback
 from slacktools import SlackTools, GSheetReader
 from .dice import roll_dice, dir_roll, stats_roll
 from .characters import random_char_gen
@@ -11,12 +9,15 @@ from .players import Players
 
 help_txt = """
 *Command Prefix*
- - `f!` or `felix`: Use this before any of the below commands (e.g., `d! roll d20`)
+ - `f!` or `felix`: Use this before any of the below commands (e.g., `f! roll d20`)
 
 *Basic Commands*:
  - `gen char [OPTIONS]`: generate a new character with random stats. 
     flags:
         - `-n <name>`:  give the character a specific name (otherwise randomly assigned)
+        - `-race <race>`: assign a race to the character
+        - `-class <class>`: assign a class to the character
+        - `-stats <stats>`: assign the character comma-separated stats 
  - `my chars`: list the names of all your characters
  - `stats <name>`: get stats on the character
  - `rm char <name>`: remove a character by name from your catalog
@@ -31,17 +32,21 @@ help_txt = """
  - `roll stats`: returns the results for a DnD 5e stats roll (4d6 drop lowest)
  - `roll direction`: determines direction to travel based on roll
 
+:point-down: *NOT YET READY* :point-down:
 *Combat Initiation*:
- - `combat [OPTIONS]`: Begin a new combat round 
-    flags:
+ - `combat [OPTIONS]`: Begin a new combat session 
+    option flags:
         - `-cr [1-5]`: Set the challenge rating (this determines enemy stats, numbers) 
-        - `-p character1 character2`: Set the players taking part in the combat 
+        - `-t1 character1 character2`: Set the characters in team 1
+        - `-t2 character1 character2`: Set the characters in team 2 
 
 *In-Combat Commands (currently inactive)*
  - `attack [OPTIONS]`
     flags:
         - `-w [slot-number]`: Attack with weapon in slot <n>. Otherwise will use primary
- - `surrender`: ends the combat round before a resolution
+ - `continue`: proceeds to the next round of combat 
+ - `to the end`: fast-forwards combat until a team surrenders
+ - `surrender`: ends the combat round before a resolution is made automatically
 """
 
 
@@ -93,7 +98,7 @@ class DNDBot:
             commands[message]()
             return None
         if message.startswith('roll'):
-            self.roll_determine(message)
+            self.roll_determine(message, channel)
         elif message.startswith('gen char'):
             response = self.character_generator(user, raw_message)
         elif message == 'my chars':
@@ -184,9 +189,9 @@ class DNDBot:
         self.players.load_players_in_channel(self._build_players(), refresh=True)
 
     # Player-triggered functions
-    def show_help(self):
+    def show_help(self, channel=None):
         """Prints help statement to channel"""
-        self.message_grp(help_txt)
+        self.message_grp(help_txt, channel)
 
     def _read_in_sheets(self):
         """Reads in GSheets for Viktor"""
@@ -198,21 +203,22 @@ class DNDBot:
                 sheet.title: gs.get_sheet(sheet.title)
             })
 
-    def roll_determine(self, msg):
+    def roll_determine(self, msg, channel=None):
         """Determine which roll function to use"""
         cmd = msg.replace('roll', '').strip()
         if re.match(r'((\d+|\+| +)|(\d*)d(\d+))', cmd, re.IGNORECASE) is not None:
             try:
                 res = roll_dice(cmd, str_output=True)
-                self.message_grp(res)
+                self.message_grp(res, channel)
             except SyntaxError:
-                self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`")
+                self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`",
+                                 channel)
         elif 'stats' in msg:
-            self.message_grp('\n'.join([x['ability'].__repr__() for x in stats_roll()]))
+            self.message_grp('\n'.join([x['ability'].__repr__() for x in stats_roll()]), channel)
         elif 'direction' in msg:
-            self.message_grp('`{}`'.format(dir_roll()))
+            self.message_grp('`{}`'.format(dir_roll()), channel)
         else:
-            self.message_grp("I didn't understand the syntax after 'roll' for this: `{}`".format(cmd))
+            self.message_grp("I didn't understand the syntax after 'roll' for this: `{}`".format(cmd), channel)
 
     def show_gsheet_link(self):
         """Prints a link to the gsheet in the channel"""
