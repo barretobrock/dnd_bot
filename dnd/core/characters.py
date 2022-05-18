@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 """Tools for describing a player character."""
 from random import randrange
-from .dice import stats_roll
-from .races import Race, race_list
+from dnd.core.abilities import Ability, Constitution
+from dnd.core.dice import stats_roll
+from dnd.core.races import (
+    Race,
+    race_list
+)
 
 
 def random_char_gen(owner, name=None):
@@ -18,15 +22,18 @@ class Character:
     """Basic characteristics for character"""
     level = 1
     xp = 0
+    hit_die = 8  # Default is d8
+    constitution = Constitution(0)
 
-    def __init__(self, owner, name=None, race=None, **attrs):
+    def __init__(self, owner_hash: str, name: str = None, race: Race = None, **attrs):
         # User's Slack ID
-        self.owner = owner
+        self.owner_hash = owner_hash
         if race is None:
             self._race = Race()
         else:
-            self._race = race()
+            self._race = race
         if name is None:
+            # Randomly generate a name based on character's race
             self.name = self._race.name_list[randrange(0, len(self._race.name_list) - 1)].title()
         else:
             self.name = name.title()
@@ -36,10 +43,11 @@ class Character:
             self.__setattr__(k, v)
         abilities = [x['ability'] for x in stats_roll()]
         # Set attributes
+        ability: Ability
         for ability in abilities:
             self.__setattr__(ability.name, ability)
         # Set max hp
-        self.max_hp = int(self.hit_die.replace('d', '')) + self.constitution.value
+        self.max_hp = self.hit_die + self.constitution.value
 
         # Set race bonuses
         for k, v in self._race.__dict__.items():
@@ -91,7 +99,7 @@ class Barbarian(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Barbarian',
-            'hit_die': 'd12',
+            'hit_die': 12,
         })
         super().__init__(owner, name, **attrs)
 
@@ -100,7 +108,7 @@ class Bard(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Bard',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -109,7 +117,7 @@ class Cleric(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Cleric',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -118,7 +126,7 @@ class Druid(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Druid',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -127,7 +135,7 @@ class Fighter(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Fighter',
-            'hit_die': 'd10',
+            'hit_die': 10,
         })
         super().__init__(owner, name, **attrs)
 
@@ -136,7 +144,7 @@ class Monk(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Monk',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -145,7 +153,7 @@ class Paladin(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Paladin',
-            'hit_die': 'd10',
+            'hit_die': 10,
         })
         super().__init__(owner, name, **attrs)
 
@@ -154,7 +162,7 @@ class Ranger(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Ranger',
-            'hit_die': 'd10',
+            'hit_die': 10,
         })
         super().__init__(owner, name, **attrs)
 
@@ -163,7 +171,7 @@ class Rogue(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Rogue',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -172,7 +180,7 @@ class Sorceror(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Sorceror',
-            'hit_die': 'd6',
+            'hit_die': 6,
         })
         super().__init__(owner, name, **attrs)
 
@@ -181,7 +189,7 @@ class Warlock(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Warlock',
-            'hit_die': 'd8',
+            'hit_die': 8,
         })
         super().__init__(owner, name, **attrs)
 
@@ -190,7 +198,7 @@ class Wizard(Character):
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Wizard',
-            'hit_die': 'd6',
+            'hit_die': 6,
         })
         super().__init__(owner, name, **attrs)
 

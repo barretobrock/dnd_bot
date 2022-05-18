@@ -1,3 +1,0 @@
-Flask>=1.1.2
-slacktools>=0.0.5
-slackeventsapi==2.1.0

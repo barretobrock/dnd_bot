@@ -7,7 +7,8 @@ class Modifier:
     def __init__(self, value):
         self.value = self.calc_modifier(value)
 
-    def calc_modifier(self, value):
+    @staticmethod
+    def calc_modifier(value):
         """Updates the ability's modifier"""
         return math.floor((value - 10) / 2)
 
@@ -17,7 +18,7 @@ class Modifier:
 
 class Ability:
     """"""
-    def __init__(self, value, ability):
+    def __init__(self, value: int, ability: str):
         self.name = ability
         self.short_name = ability[:3]
         self.value = value
@@ -67,4 +68,3 @@ class Charisma(Ability):
     """"""
     def __init__(self, value):
         super().__init__(value, ability='charisma')
-

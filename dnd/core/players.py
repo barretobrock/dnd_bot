@@ -74,9 +74,3 @@ class Player:
             _ = self.character_list.pop(self.character_list.index(char))
             return True
         return False
-
-
-
-
-
-
