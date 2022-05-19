@@ -15,6 +15,12 @@ _Note: 'Unreleased' section below is used for untagged changes that will be issu
 #### Security
 __BEGIN-CHANGELOG__
  
+### [0.0.4] - 2022-05-18
+#### Added
+ - Slash command endpoint
+#### Fixed
+ - BlockKit on character gen now builds blocks properly
+ 
 ### [0.0.3] - 2022-05-18
 #### Changed
  - Subdomain endpoint

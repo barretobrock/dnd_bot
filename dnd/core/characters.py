@@ -94,9 +94,9 @@ class Character:
     def info_blocks(self) -> List[Dict]:
         """Returns character info as BlockKit blocks"""
         return [
-            BKitB.markdown_section(f'*`{self.name}`*: `{self.char_class}` `{self._race.race}`'),
+            BKitB.make_block_section(f'*`{self.name}`*: `{self.char_class}` `{self._race.race}`'),
             BKitB.make_block_divider(),
-            BKitB.markdown_section(f'HP: *`{self.current_hp}`*/`{self.max_hp}` XP: `{self.xp}`'),
+            BKitB.make_block_section(f'HP: *`{self.current_hp}`*/`{self.max_hp}` XP: `{self.xp}`'),
             BKitB.make_context_section(elements=[
                 getattr(self, x).__repr__() for x in ['strength', 'dexterity', 'constitution',
                                                       'intelligence', 'wisdom', 'charisma']

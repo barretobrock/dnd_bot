@@ -1,5 +1,9 @@
 import signal
-from flask import Flask
+from flask import (
+    Flask,
+    make_response,
+    request
+)
 from slackeventsapi import SlackEventAdapter
 from slacktools import SecretStore
 from dnd.db_eng import DizzyPSQLClient
@@ -36,3 +40,15 @@ bot_events = SlackEventAdapter(dnd_creds.signing_secret, "/api/events", app)
 @logg.catch
 def scan_message(event_data):
     Bot.process_event(event_data)
+
+
+@app.route('/api/slash', methods=['GET', 'POST'])
+@logg.catch
+def handle_slash():
+    """Handles a slash command"""
+    event_data = request.form
+    # Handle the command
+    Bot.process_slash_command(event_data)
+
+    # Send HTTP 200 response with an empty body so Slack knows we're done
+    return make_response('', 200)
