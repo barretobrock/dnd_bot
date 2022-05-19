@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3os.environ['DND_DEBUG'] = "0"
 # -*- coding: utf-8 -*-
 import os
-os.environ['DND_DEBUG'] = "1"
+os.environ['DND_ENV'] = "DEVELOPMENT"
 from dnd.app import app
 
 
@@ -12,5 +12,3 @@ def index():
 
 if __name__ == '__main__':
     app.run(port=5002)
-
-

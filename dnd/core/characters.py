@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Tools for describing a player character."""
-from random import randrange
+from random import (
+    choice,
+    randrange
+)
+from typing import (
+    Dict,
+    List
+)
+from slacktools.block_kit import BlockKitBuilder as BKitB
 from dnd.core.abilities import Ability, Constitution
 from dnd.core.dice import stats_roll
 from dnd.core.races import (
+    NAME_LIST,
     Race,
     race_list
 )
@@ -20,6 +29,7 @@ def random_char_gen(owner, name=None):
 
 class Character:
     """Basic characteristics for character"""
+    char_class = 'Nothing'
     level = 1
     xp = 0
     hit_die = 8  # Default is d8
@@ -34,7 +44,7 @@ class Character:
             self._race = race
         if name is None:
             # Randomly generate a name based on character's race
-            self.name = self._race.name_list[randrange(0, len(self._race.name_list) - 1)].title()
+            self.name = choice(NAME_LIST).title()
         else:
             self.name = name.title()
         self.name_lower = self.name.lower()
@@ -81,9 +91,21 @@ class Character:
             ability_obj.value += increment_value
         self.__setattr__(ability, ability_obj)
 
+    def info_blocks(self) -> List[Dict]:
+        """Returns character info as BlockKit blocks"""
+        return [
+            BKitB.markdown_section(f'*`{self.name}`*: `{self.char_class}` `{self._race.race}`'),
+            BKitB.make_block_divider(),
+            BKitB.markdown_section(f'HP: *`{self.current_hp}`*/`{self.max_hp}` XP: `{self.xp}`'),
+            BKitB.make_context_section(elements=[
+                getattr(self, x).__repr__() for x in ['strength', 'dexterity', 'constitution',
+                                                      'intelligence', 'wisdom', 'charisma']
+            ])
+        ]
+
     def __repr__(self):
         return """
-        `{name}`: `{race}` `{char_class}`
+        `{name}`: `{char_class}` `{race}` 
         ----------------------------------------
         HP: `{current_hp}/{max_hp}` XP: `{xp}` 
         {strength}
@@ -96,24 +118,25 @@ class Character:
 
 
 class Barbarian(Character):
+    char_class = 'Barbarian'
+    hit_die = 12
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Barbarian',
-            'hit_die': 12,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Bard(Character):
+    char_class = 'Bard'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Bard',
-            'hit_die': 8,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Cleric(Character):
+    char_class = 'Cleric'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
         attrs.update({
             'char_class': 'Cleric',
@@ -123,83 +146,74 @@ class Cleric(Character):
 
 
 class Druid(Character):
+    char_class = 'Druid'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Druid',
-            'hit_die': 8,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Fighter(Character):
+    char_class = 'Fighter'
+    hit_die = 10
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Fighter',
-            'hit_die': 10,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Monk(Character):
+    char_class = 'Monk'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Monk',
-            'hit_die': 8,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Paladin(Character):
+    char_class = 'Paladin'
+    hit_die = 10
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Paladin',
-            'hit_die': 10,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Ranger(Character):
+    char_class = 'Ranger'
+    hit_die = 10
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Ranger',
-            'hit_die': 10,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Rogue(Character):
+    char_class = 'Rogue'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Rogue',
-            'hit_die': 8,
-        })
         super().__init__(owner, name, **attrs)
 
 
-class Sorceror(Character):
+class Sorcerer(Character):
+    char_class = 'Sorcerer'
+    hit_die = 6
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Sorceror',
-            'hit_die': 6,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Warlock(Character):
+    char_class = 'Warlock'
+    hit_die = 8
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Warlock',
-            'hit_die': 8,
-        })
         super().__init__(owner, name, **attrs)
 
 
 class Wizard(Character):
+    char_class = 'Wizard'
+    hit_die = 6
+
     def __init__(self, owner, name, **attrs):
-        attrs.update({
-            'char_class': 'Wizard',
-            'hit_die': 6,
-        })
         super().__init__(owner, name, **attrs)
 
 
@@ -213,7 +227,7 @@ character_classes = [
     Paladin,
     Ranger,
     Rogue,
-    Sorceror,
+    Sorcerer,
     Warlock,
     Wizard
 ]

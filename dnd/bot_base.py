@@ -1,228 +1,150 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
-from slacktools import SlackTools, GSheetReader
-from .dice import roll_dice, dir_roll, stats_roll
-from .characters import random_char_gen
-from .players import Players
-
-
-help_txt = """
-*Command Prefix*
- - `f!` or `felix`: Use this before any of the below commands (e.g., `f! roll d20`)
-
-*Basic Commands*:
- - `gen char [OPTIONS]`: generate a new character with random stats. 
-    flags:
-        - `-n <name>`:  give the character a specific name (otherwise randomly assigned)
-        - `-race <race>`: assign a race to the character
-        - `-class <class>`: assign a class to the character
-        - `-stats <stats>`: assign the character comma-separated stats 
- - `my chars`: list the names of all your characters
- - `stats <name>`: get stats on the character
- - `rm char <name>`: remove a character by name from your catalog
-
-*Dice Rolling*:
- - `roll <rolls>d<sides>`: roll (and add) dice using standard notation
-    Examples:
-        `roll 1d20 + 8 + 4d8`
-        `roll 2d20 - 2 + 4d10`
-        `roll d20`
-        `roll 2 + 2 + 5d8`
- - `roll stats`: returns the results for a DnD 5e stats roll (4d6 drop lowest)
- - `roll direction`: determines direction to travel based on roll
-
-:point-down: *NOT YET READY* :point-down:
-*Combat Initiation*:
- - `combat [OPTIONS]`: Begin a new combat session 
-    option flags:
-        - `-cr [1-5]`: Set the challenge rating (this determines enemy stats, numbers) 
-        - `-t1 character1 character2`: Set the characters in team 1
-        - `-t2 character1 character2`: Set the characters in team 2 
-
-*In-Combat Commands (currently inactive)*
- - `attack [OPTIONS]`
-    flags:
-        - `-w [slot-number]`: Attack with weapon in slot <n>. Otherwise will use primary
- - `continue`: proceeds to the next round of combat 
- - `to the end`: fast-forwards combat until a team surrenders
- - `surrender`: ends the combat round before a resolution is made automatically
-"""
+import sys
+from datetime import datetime
+from typing import (
+    Dict,
+    List,
+    Optional
+)
+from types import SimpleNamespace
+from loguru import logger
+from slacktools import (
+    SlackBotBase,
+    BlockKitBuilder as BKitB
+)
+from slacktools.tools import build_commands
+from dnd import ROOT_PATH
+from dnd.db_eng import DizzyPSQLClient
+from dnd.model import (
+    SettingType
+)
+from dnd.settings import auto_config
+from dnd.core.dice import (
+    roll_dice,
+    dir_roll,
+    stats_roll
+)
+from dnd.core.characters import random_char_gen
 
 
 class DNDBot:
     """Bot for practicing DnD combat on Slack"""
 
-    def __init__(self, log_name, xoxb_token, xoxp_token, debug=False):
+    def __init__(self, eng: DizzyPSQLClient, bot_cred_entry: SimpleNamespace, parent_log: logger):
         """
-        :param log_name: str, name of the log to retrieve
-        :param debug: bool,
+        Args:
+
         """
-        self.bot_name = 'Felix'
-        self.triggers = ['felix', 'f!'] if not debug else ['ftest', 'ft!']
-        self.channel_id = 'CSQKP7S90' if not debug else 'CT48WCESG'  # random or felix-test
-        # Read in common tools for interacting with Slack's API
-        self.st = SlackTools(log_name, triggers=self.triggers, team='dd-indeed',
-                             xoxp_token=xoxp_token, xoxb_token=xoxb_token)
-        # Two types of API interaction: bot-level, user-level
+        self.bot_name = f'{auto_config.BOT_FIRST_NAME} {auto_config.BOT_LAST_NAME}'
+        self.log = parent_log.bind(child_name=self.__class__.__name__)
+        self.eng = eng
+        self.triggers = auto_config.TRIGGERS
+        self.channel_id = auto_config.MAIN_CHANNEL  # cah or cah-test
+        self.admin_user = auto_config.ADMINS
+        self.version = auto_config.VERSION
+        self.update_date = auto_config.UPDATE_DATE
+
+        # Begin loading and organizing commands
+        self.commands = build_commands(self, cmd_yaml_path=ROOT_PATH.parent.joinpath('commands.yaml'),
+                                       log=self.log)
+        # Initate the bot, which comes with common tools for interacting with Slack's API
+        self.st = SlackBotBase(bot_cred_entry=bot_cred_entry, triggers=self.triggers, main_channel=self.channel_id,
+                               parent_log=self.log, debug=False, use_session=False)
+        # Pass in commands to SlackBotBase, where task delegation occurs
+        self.log.debug('Patching in commands to SBB...')
+        self.st.update_commands(commands=self.commands)
+        self.bot_id = self.st.bot_id
+        self.user_id = self.st.user_id
         self.bot = self.st.bot
-        self.user = self.st.user
-        self.bot_id = self.bot.auth_test()['user_id']
+        self.generate_intro()
 
-        # For storing game info
-        self.dnd_gsheet = '19BQ9yevHj68YaEhHaD5-7Eu32BQSpXXJDdYo4CNkaOA'
-        self.gs_dict = {}
-        self._read_in_sheets()
+        if self.eng.get_setting(SettingType.IS_ANNOUNCE_STARTUP):
+            self.log.debug('IS_ANNOUNCE_STARTUP was enabled, so sending message to main channel')
+            self.st.message_main_channel(blocks=self.get_bootup_msg())
 
-        self.players = Players(self._build_players())
+    def get_bootup_msg(self) -> List[Dict]:
+        return [BKitB.make_context_section([
+            BKitB.markdown_section(f"*{self.bot_name}* *`{self.version}`* booted up at `{datetime.now():%F %T}`!"),
+            BKitB.markdown_section(f"(updated {self.update_date})")
+        ])]
 
-    def handle_command(self, event_dict):
-        """Handles a bot command if it's known"""
-        # Simple commands that we can map to a function
-        commands = {
-            'gsheets link': self.show_gsheet_link,
-            # 'status': self.display_status,
-            # 'surrender': self.end_game,
+    def search_help_block(self, message: str):
+        """Takes in a message and filters command descriptions for output
+        """
+        self.log.debug(f'Got help search command: {message}')
+        return self.st.search_help_block(message=message)
 
-        }
-        response = None
-        message = event_dict['message']
-        raw_message = event_dict['raw_message']
-        user = event_dict['user']
-        channel = event_dict['channel']
+    def generate_intro(self):
+        """Generates the intro message and feeds it in to the 'help' command"""
+        intro = f"Hi! I'm *{self.bot_name}* and I am help you to Dungeon and Dragon! \n" \
+                f"Be sure to call my attention first with *`{'`* or *`'.join(self.triggers)}`*\n " \
+                f"Example: *`d! roll d20`*\nHere's what I can do:"
+        avi_url = "https://avatars.slack-edge.com/2019-10-13/782232259363_98821cb8199a6c08a095_512.jpg"
+        avi_alt = 'dat me'
+        # Build the help text based on the commands above and insert back into the commands dict
+        return self.st.build_help_block(intro, avi_url, avi_alt)
 
-        if message in commands.keys():
-            # Call the command
-            commands[message]()
-            return None
-        if message.startswith('roll'):
-            self.roll_determine(message, channel)
-        elif message.startswith('gen char'):
-            response = self.character_generator(user, raw_message)
-        elif message == 'good bot':
-            response = 'thanks <@{user}>!'
-        elif message == 'help':
-            response = help_txt
-        elif message == 'my chars':
-            response = self.show_user_chars(user)
-        elif message == 'refresh sheets':
-            self._read_in_sheets()
-            response = 'Sheets have been refreshed! `{}`'.format(','.join(self.gs_dict.keys()))
-        elif message.startswith('stats'):
-            response = self.get_char_stats(user, message)
-        elif message.startswith('rm char'):
-            response = self.remove_character(user, message)
-        elif message != '':
-            response = "I didn't understand this: `{}`\n " \
-                       "Use `felix help` to get a list of my commands.".format(message)
+    def cleanup(self, *args):
+        """Runs just before instance is destroyed"""
+        _ = args
+        notify_block = [
+            BKitB.make_context_section([BKitB.markdown_section(f'{self.bot_name} died. '
+                                                               f':death-drops::party-dead::death-drops:')])
+        ]
+        if self.eng.get_setting(SettingType.IS_ANNOUNCE_SHUTDOWN):
+            self.st.message_main_channel(blocks=notify_block)
+        self.log.info('Bot shutting down...')
+        sys.exit(0)
 
-        if response is not None:
-            resp_dict = {
-                'user': user
-            }
-            self.st.send_message(channel, response.format(**resp_dict))
+    def process_slash_command(self, event_dict: Dict):
+        """Hands off the slash command processing while also refreshing the session"""
+        # TODO: Log slash
+        self.st.parse_slash_command(event_dict)
 
-    def message_grp(self, message, channel=None):
-        """Wrapper to send message to whole channel"""
-        channel = self.channel_id if channel is None else channel
-        self.st.send_message(channel, message)
+    def process_event(self, event_dict: Dict):
+        """Hands off the event data while also refreshing the session"""
+        self.st.parse_event(event_data=event_dict)
 
-    def character_generator(self, user, message):
+    def process_incoming_action(self, user: str, channel: str, action_dict: Dict, event_dict: Dict,
+                                ) -> Optional:
+        """Handles an incoming action (e.g., when a button is clicked)"""
+        action_id = action_dict.get('action_id')
+        action_value = action_dict.get('value')
+        msg = event_dict.get('message', {})
+        _ = msg.get('thread_ts')
+        self.log.debug(f'Receiving action_id: {action_id} and value: {action_value} from user: {user} in '
+                       f'channel: {channel}')
+        if action_id == 'new-char-create':
+            pass
+        else:
+            pass
+
+    def character_generator(self, user: str, message: str) -> str:
         """Handles character generation"""
+        self.log.debug('Spinning up random character.')
         msg_split = message.split()
         name = None
         if '-n' in msg_split:
             # Apply a name provided by the user
             name = ' '.join(msg_split[msg_split.index('-n') + 1:])
-        player = self.players.get_player_by_id(user)
         char = random_char_gen(user, name)
-        player.character_list.append(char)
-        self.players.update_player(user, player)
-        return char.__repr__()
+        return char.info_blocks()
 
-    def show_user_chars(self, user):
-        """Shows the name of the users characters"""
-        player = self.players.get_player_by_id(user)
-        c_list = player.character_list
-        char_info = []
-        if len(c_list) > 0:
-            for char in c_list:
-                char_str = '`{}` ({} {})'.format(char.name, char.race, char.char_class)
-                char_info.append(char_str)
-            return '\n'.join(char_info)
-        return 'No characters to show!'
-
-    def get_char_stats(self, user, message):
-        """Shows the stats of a particular character"""
-        player = self.players.get_player_by_id(user)
-        char = player.get_char_by_name(message.replace('stats', '').strip())
-        return char.__repr__()
-
-    def remove_character(self, user, message):
-        player = self.players.get_player_by_id(user)
-        char_name = message.replace('rm char', '').strip()
-        success = player.remove_char_by_name(char_name)
-        if success:
-            return 'Character `{}` successfully removed.'.format(char_name)
-        else:
-            return 'Could not remove `{}`.'.format(char_name)
-
-    def _build_players(self):
-        """
-        Takes in a list of users in channel, sets basic, game-related details and
-            returns a list of dicts for each human player
-        """
-        players = []
-        for user in self.st.get_channel_members(self.channel_id, humans_only=True):
-            user_cleaned = {
-                'id': user['id'],
-                'display_name': user['display_name'].lower(),
-                'real_name': user['name'],
-                'is_bot': user['is_bot'],
-            }
-            # Make sure display name is not empty
-            if user_cleaned['display_name'] == '':
-                user_cleaned['display_name'] = user_cleaned['real_name']
-            players.append(user_cleaned)
-        return players
-
-    def _refresh_players(self):
-        """Refreshed existing player names and adds new players that may have joined the channel"""
-        self.players.load_players_in_channel(self._build_players(), refresh=True)
-
-    # Player-triggered functions
-    def show_help(self, channel=None):
-        """Prints help statement to channel"""
-        self.message_grp(help_txt, channel)
-
-    def _read_in_sheets(self):
-        """Reads in GSheets for Viktor"""
-        gs = GSheetReader(self.dnd_gsheet)
-        sheets = gs.sheets
-        self.gs_dict = {}
-        for sheet in sheets:
-            self.gs_dict.update({
-                sheet.title: gs.get_sheet(sheet.title)
-            })
-
-    def roll_determine(self, msg, channel=None):
+    def roll_determine(self, message: str) -> str:
         """Determine which roll function to use"""
-        cmd = msg.replace('roll', '').strip()
-        if re.match(r'((\d+|\+| +)|(\d*)d(\d+))', cmd, re.IGNORECASE) is not None:
+        cmd = re.sub(r'^(roll|r)\s+', '', message).strip()
+        self.log.debug(f'Stripped roll command to: {cmd}')
+        if 'stats' in message:
+            return '\n'.join([x['ability'].__repr__() for x in stats_roll()])
+        elif 'direction' in message:
+            return f'`{dir_roll()}`'
+        elif re.match(r'[\(\)d\d\s+-\/*]+', cmd, re.IGNORECASE) is not None:
             try:
-                res = roll_dice(cmd, str_output=True)
-                self.message_grp(res, channel)
+                return roll_dice(cmd, str_output=True)
             except SyntaxError:
-                self.message_grp("I wasn't able to parse out the roll command. Example syntax: `1d20 + 6 + 4d6`",
-                                 channel)
-        elif 'stats' in msg:
-            self.message_grp('\n'.join([x['ability'].__repr__() for x in stats_roll()]), channel)
-        elif 'direction' in msg:
-            self.message_grp('`{}`'.format(dir_roll()), channel)
+                return f'I wasn\'t able to parse out this roll command: {message}. ' \
+                       f'Here\'s an example of what I do understand: `r 1d20 + 6 + 4d6`'
         else:
-            self.message_grp("I didn't understand the syntax after 'roll' for this: `{}`".format(cmd), channel)
-
-    def show_gsheet_link(self):
-        """Prints a link to the gsheet in the channel"""
-
-        return f'https://docs.google.com/spreadsheets/d/{self.dnd_gsheet}/'
+            return f'I didn\'t understand the syntax after \'roll\' for this: `{cmd}`'

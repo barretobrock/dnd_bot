@@ -1,0 +1,39 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "dnd"
+version = '0.0.2'
+description = "A slackbot for DND-related activities"
+authors = ["bobrock <bobrock@tuta.io>"]
+license = "MIT"
+readme = 'README.md'
+repository = 'https://github.com/barretobrock/dnd_bot'
+packages = [
+    { include = 'dnd' },
+]
+include = ["CHANGELOG.md"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+slacktools = {git = "https://github.com/barretobrock/slacktools.git"}
+pukr = { git = "https://github.com/barretobrock/pukr.git", branch = "main" }
+Flask = "2.1.1"
+d20 = "^1.1.2"
+numpy = "^1.22.3"
+pandas = "^1.4.2"
+pykeepass = "^4.0.1"
+requests = ">=2.23.0"
+slackeventsapi = "3.0.1"
+# Optional dependencies would go down here
+# example = { version = ">=1.7.0", optional = true }
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.1"
+pytest-cov = "^3.0.0"
+flake8 = "^4.0.1"
+tox = "^3.24.5"
+
+[tool.poetry.extras]
+test = ["pytest"]

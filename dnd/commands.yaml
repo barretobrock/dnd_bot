@@ -1,0 +1,97 @@
+# Expected structure for commands:
+#   <cmd_regex>:
+#       name: <command_name>
+#       tags: <comma-separated-tags>
+#       desc: <description>
+#       # Response should be one of these:
+#       response-cmd:
+#           A dynamic command that's mapped to the dict on instantiation via attribute lookup
+#           callable: <name_of_callable>
+#           args:
+#               # Note: these arg names should match what's coming in from an event
+#               #   (e.g., user, channel, message)
+#               - list
+#               - of
+#               - args
+#       response-txt: something <@{user}>
+
+commands:
+    group-support:
+        ^help$:
+            tags:
+                - support
+                - main
+            desc: Description of the main commands I respond to, along with other groups and tags to search my other commands
+            response-cmd:
+                callable: generate_intro
+        ^(search\s?help|shelp):
+            tags:
+                - support
+                - main
+            desc: Search the command descriptions by tag or group
+            examples:
+                - search help -t support
+                - search help -g roll
+                - shelp -g char
+            response-cmd:
+                callable: search_help_block
+                args:
+                    - message
+        ^about$:
+            tags:
+                - debug
+            desc: Bootup time of Dizzy's current instance, zir current version and last update date
+            response-cmd:
+                callable: get_bootup_msg
+    group-roll:
+        ^(roll|r)\s+.*:
+            tags:
+                - roll
+                - dice
+            desc: Handles dice rolls
+            examples:
+                - r d20
+                - roll 1d20 + 8 + 4d8
+                - roll 2 + 2 + 5d8
+            response-cmd:
+                callable: roll_determine
+                args:
+                    - message
+        ^(roll|r)\sstats$:
+            tags:
+                - roll
+                - dice
+            desc: Returns the results for a DnD stats roll (4d6 drop lowest)
+            examples:
+                - r stats
+                - roll stats
+            response-cmd:
+                callable: roll_determine
+                args:
+                    - message
+        ^(roll|r)\sdirection$:
+            tags:
+                - roll
+                - dice
+            desc: Determines cardinal direction of travel based on roll
+            examples:
+                - r direction
+                - roll direction
+            response-cmd:
+                callable: roll_determine
+                args:
+                    - message
+    group-char:
+        ^char\s?gen:
+            tags:
+                - roll
+                - char
+            desc: Generates a character + stats
+            examples:
+                - char gen
+                - chargen
+            response-cmd:
+                callable: character_generator
+                args:
+                    - user
+                    - message

@@ -13,6 +13,7 @@ User=bobrock
 Group=bobrock
 Type=idle
 ExecStart=/home/bobrock/venvs/dnd_bot/bin/python3 /home/bobrock/extras/dnd_bot/run.py
+WorkingDirectory=/home/bobrock/extras/cah_bot
 Restart=on-failure
 
 [Install]
