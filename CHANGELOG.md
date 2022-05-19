@@ -15,6 +15,10 @@ _Note: 'Unreleased' section below is used for untagged changes that will be issu
 #### Security
 __BEGIN-CHANGELOG__
  
+### [0.0.3] - 2022-05-18
+#### Changed
+ - Subdomain endpoint
+ 
 ### [0.0.2] - 2022-05-16
 #### Added
  - CHANGELOG

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "dnd"
-version = '0.0.2'
+version = '0.0.3'
 description = "A slackbot for DND-related activities"
 authors = ["bobrock <bobrock@tuta.io>"]
 license = "MIT"

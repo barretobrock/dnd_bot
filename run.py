@@ -5,10 +5,10 @@ os.environ['DND_ENV'] = "PRODUCTION"
 from dnd.app import app
 
 
-@app.route('/dnd')
+@app.route('/')
 def index():
     return 'DND'
 
 
 if __name__ == '__main__':
-    app.run(port=5002)
+    app.run(port=5005)
