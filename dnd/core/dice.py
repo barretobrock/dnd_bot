@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import random
+import re
 from typing import (
     Dict,
     List,
     Union
 )
 from d20 import (
+    Dice,
     roll,
     RollResult,
     RollSyntaxError
@@ -20,6 +22,8 @@ from dnd.core.abilities import (
     Wisdom
 )
 
+MAX_SIDES = 200
+MAX_ROLLS = 100
 
 try:
     # Use the system PRNG if possible
@@ -32,8 +36,38 @@ except NotImplementedError:
     rnd = random
 
 
+class Dice:
+    sides = 0
+    rolls = 0
+
+    def __init__(self, msg_part: str):
+        result = re.search(r'(\d*)d(\d+)', msg_part)
+        if result is not None:
+            if result.group(1) == '':
+                self.rolls = 1
+            else:
+                self.rolls = int(result.group(1))
+            self.sides = int(result.group(2))
+
+
+class MaxRollsExceededException(Exception):
+    pass
+
+
+class MaxSidesExceededException(Exception):
+    pass
+
+
 def roll_dice(input_txt: str, str_output: bool = False) -> Union[str, RollResult]:
     """Rolls a dice"""
+    # Ensure the rolls are within reason
+    dice_used = [Dice(x) for x in input_txt.split(' ')]
+    sides_total = sum([x.sides for x in dice_used])
+    rolls_total = sum([x.rolls for x in dice_used])
+    if sides_total > MAX_SIDES:
+        raise MaxSidesExceededException('User exceeded the maximum sides used in a request.')
+    elif rolls_total > MAX_ROLLS:
+        raise MaxRollsExceededException('User exceeded the maximum rolls used in a request.')
     try:
         roll_result = roll(input_txt)
     except RollSyntaxError:
