@@ -8,7 +8,6 @@ from typing import (
     Union
 )
 from d20 import (
-    Dice,
     roll,
     RollResult,
     RollSyntaxError

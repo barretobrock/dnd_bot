@@ -15,6 +15,10 @@ _Note: 'Unreleased' section below is used for untagged changes that will be issu
 #### Security
 __BEGIN-CHANGELOG__
  
+### [0.0.5] - 2022-05-31
+#### Added
+ - sides / rolls limit per command
+ 
 ### [0.0.4] - 2022-05-18
 #### Added
  - Slash command endpoint
